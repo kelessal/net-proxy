@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Salih Keleş</Authors>
+    <Company>Salih Keleş</Company>
+    <Description>making interface type to runtime implemented interface  concrete type</Description>
+    <Copyright>©2019 Salih Keleş</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Net.Extensions" Version="1.0.0" />
+    <PackageReference Include="Net.Reflection" Version="1.0.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>
