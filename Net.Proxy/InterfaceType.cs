@@ -31,7 +31,7 @@ namespace Net.Proxy
                     return _ConcreteTypes[interfaceType];
                 }
 
-                var typeName = $"{interfaceType.Name.Substring(1)}_bi_proxy";
+                var typeName = $"{interfaceType.Name.Substring(1)}_interface_proxy";
                 var proxyTypeBuilder = RuntimeTypeBuilder.CreateTypeBuilder(typeName);
                 proxyTypeBuilder.AddInterfaceImplementation(interfaceType);
                 var info = interfaceType.GetInfo();

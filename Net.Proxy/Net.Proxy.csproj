@@ -6,6 +6,10 @@
     <Company>Salih Keleş</Company>
     <Description>making interface type to runtime implemented interface  concrete type</Description>
     <Copyright>©2019 Salih Keleş</Copyright>
+    <PackageLicenseUrl>https://github.com/kelessal/net-proxy/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/kelessal/net-proxy</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/kelessal/net-proxy/blob/master/images/infinity.png</PackageIconUrl>
+    <PackageTags>interface runtime proxy concrete</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
