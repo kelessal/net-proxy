@@ -45,11 +45,14 @@ namespace Net.Proxy
             }
 
         }
-        public static T NewProxy<T>()
+        public static T NewProxy<T>(Action<T> init=default)
         {
             var proxy = typeof(T).GetProxyType();
-            return (T)Activator.CreateInstance(proxy);
+            var instance= (T)Activator.CreateInstance(proxy);
+            if (init == null) return instance;
+            init(instance);
+            return instance;
         }
-        
+       
     }
 }
