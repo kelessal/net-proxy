@@ -22,7 +22,7 @@ namespace Net.Proxy
         public static TypeBuilder CreateTypeBuilder(string typeName, Type baseType = null)
         {
 
-            TypeBuilder tb = moduleBuilder.DefineType(typeName,
+            TypeBuilder tb = moduleBuilder.DefineType($"Net.Proxy.{typeName}",
                     TypeAttributes.Public |
                     TypeAttributes.Class |
                     TypeAttributes.AutoClass |
