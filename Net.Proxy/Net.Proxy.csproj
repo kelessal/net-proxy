@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Salih Keleş</Authors>
     <Company>Salih Keleş</Company>
     <Description>making interface type to runtime implemented interface  concrete type</Description>
@@ -11,13 +11,11 @@
     <PackageIconUrl>https://github.com/kelessal/net-proxy/blob/master/images/infinity.png</PackageIconUrl>
     <PackageTags>interface runtime proxy concrete</PackageTags>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.2</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Net.Extensions" Version="1.0.0" />
-    <PackageReference Include="Net.Reflection" Version="1.0.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
   </ItemGroup>
 
 </Project>

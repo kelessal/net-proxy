@@ -1,5 +1,4 @@
-﻿using Net.Reflection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -154,10 +153,9 @@ namespace Net.Proxy
             where T : class, new()
         {
             var typeBuilder = CreateTypeBuilder(name);
-            var objectInfo = typeof(T).GetInfo();
-            foreach(var prop in objectInfo.GetAllProperties())
+            foreach(var prop in InterfaceType.FindProperties(typeBuilder))
             {
-                var probBuilder=AddProperty(typeBuilder, prop.Name, prop.Type);
+                var probBuilder=AddProperty(typeBuilder, prop.Name, prop.PropertyType);
             }
             return typeBuilder;
         }
