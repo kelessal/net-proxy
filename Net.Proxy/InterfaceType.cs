@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Net.Extensions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Net.Proxy
 {
@@ -38,6 +40,22 @@ namespace Net.Proxy
                 foreach (var prop in FindProperties(interfaceType))
                 {
                     proxyTypeBuilder.AddProperty(prop.Name, prop.PropertyType);
+                    var attrData = prop.GetCustomAttributesData();
+                    foreach(var data in attrData)
+                    {
+                        var ctorInfo = data.Constructor;
+                        var ctorArgs = data.ConstructorArguments.Select(p => p.Value).ToArray();
+                        var namedFields = data.NamedArguments.Where(p => p.IsField).Select(p => p.MemberInfo)
+                            .Cast<FieldInfo>().ToArray();
+                        var namedFieldValues = data.NamedArguments.Where(p => p.IsField).Select(p => p.TypedValue.Value)
+                            .ToArray();
+                        var namedProps = data.NamedArguments.Where(p => !p.IsField).Select(p => p.MemberInfo)
+                          .Cast<PropertyInfo>().ToArray();
+                        var namedPropertyValues = data.NamedArguments.Where(p => !p.IsField).Select(p => p.TypedValue.Value)
+                            .ToArray();
+                        var attrBuilder = new CustomAttributeBuilder(data.Constructor,ctorArgs, namedProps, namedPropertyValues, namedFields, namedFieldValues);
+                        proxyTypeBuilder.SetCustomAttribute(attrBuilder);
+                    }
                 }
                 var proxyType = proxyTypeBuilder.CreateTypeInfo();
                 _ConcreteTypes[interfaceType] = proxyType;
