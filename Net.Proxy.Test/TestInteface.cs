@@ -7,6 +7,7 @@ namespace Net.Proxy.Test
 {
     public interface TestInteface:TestInterfaceBase
     {
+        [Obsolete]
         new string Name { get; set; }
     }
     public interface TestInterfaceBase

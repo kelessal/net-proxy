@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Xunit;
 
 namespace Net.Proxy.Test
@@ -11,6 +12,13 @@ namespace Net.Proxy.Test
         {
             var result=InterfaceType.NewProxy<TestInteface>();
             Assert.Equal("Net.Proxy", result.GetType().Namespace);
+        }
+        [Fact]
+        public void FindTypeProperties()
+        {
+            var result = InterfaceType.NewProxy<TestInteface>();
+            var nameProperty=result.GetType().GetProperty("Name");
+            var attrs=nameProperty.GetCustomAttributes();
         }
     }
 }

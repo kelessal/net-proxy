@@ -156,6 +156,7 @@ namespace Net.Proxy
             foreach(var prop in InterfaceType.FindProperties(typeBuilder))
             {
                 var probBuilder=AddProperty(typeBuilder, prop.Name, prop.PropertyType);
+                
             }
             return typeBuilder;
         }

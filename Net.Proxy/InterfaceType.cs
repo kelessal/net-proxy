@@ -39,7 +39,7 @@ namespace Net.Proxy
                 proxyTypeBuilder.AddInterfaceImplementation(interfaceType);
                 foreach (var prop in FindProperties(interfaceType))
                 {
-                    proxyTypeBuilder.AddProperty(prop.Name, prop.PropertyType);
+                    var propertyBuilder=proxyTypeBuilder.AddProperty(prop.Name, prop.PropertyType);
                     var attrData = prop.GetCustomAttributesData();
                     foreach(var data in attrData)
                     {
@@ -54,7 +54,7 @@ namespace Net.Proxy
                         var namedPropertyValues = data.NamedArguments.Where(p => !p.IsField).Select(p => p.TypedValue.Value)
                             .ToArray();
                         var attrBuilder = new CustomAttributeBuilder(data.Constructor,ctorArgs, namedProps, namedPropertyValues, namedFields, namedFieldValues);
-                        proxyTypeBuilder.SetCustomAttribute(attrBuilder);
+                        propertyBuilder.SetCustomAttribute(attrBuilder);
                     }
                 }
                 var proxyType = proxyTypeBuilder.CreateTypeInfo();
@@ -69,7 +69,7 @@ namespace Net.Proxy
             if (type.IsInterface)
             {
                 var propertyInfos = new List<PropertyInfo>();
-
+                var propertyNameSet = new HashSet<string>();
                 var considered = new List<Type>();
                 var queue = new Queue<Type>();
                 considered.Add(type);
@@ -91,9 +91,11 @@ namespace Net.Proxy
                         | BindingFlags.Instance);
 
                     var newPropertyInfos = typeProperties
-                        .Where(x => !propertyInfos.Contains(x));
+                        .Where(x => !propertyNameSet.Contains(x.Name)).ToArray();
 
                     propertyInfos.InsertRange(0, newPropertyInfos);
+                    foreach(var item in newPropertyInfos)
+                        propertyNameSet.Add(item.Name);
                 }
 
                 return propertyInfos.ToArray();
