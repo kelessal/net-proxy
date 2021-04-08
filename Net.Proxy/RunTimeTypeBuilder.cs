@@ -91,7 +91,31 @@ namespace Net.Proxy
             getIl.EmitCall(OpCodes.Call, propInfo.GetMethod,Type.EmptyTypes);
             getIl.Emit(OpCodes.Ret);
 
-           
+            MethodBuilder setPropMthdBldr =
+               tb.DefineMethod("set_" + propertyName,
+                 MethodAttributes.Public |
+                 MethodAttributes.SpecialName |
+                 MethodAttributes.HideBySig |
+                 MethodAttributes.Virtual,
+                 null, new[] { propertyType });
+            FieldBuilder fieldBuilder = tb.DefineField("_" + propertyName, propertyType, FieldAttributes.Private);
+
+            ILGenerator setIl = setPropMthdBldr.GetILGenerator();
+            Label modifyProperty = setIl.DefineLabel();
+            Label exitSet = setIl.DefineLabel();
+
+            setIl.MarkLabel(modifyProperty);
+            setIl.Emit(OpCodes.Ldarg_0);
+            setIl.Emit(OpCodes.Ldarg_1);
+            setIl.Emit(OpCodes.Stfld, fieldBuilder);
+
+            setIl.Emit(OpCodes.Nop);
+            setIl.MarkLabel(exitSet);
+            setIl.Emit(OpCodes.Ret);
+
+            propertyBuilder.SetGetMethod(getPropMthdBldr);
+            propertyBuilder.SetSetMethod(setPropMthdBldr);
+
 
             propertyBuilder.SetGetMethod(getPropMthdBldr);
 

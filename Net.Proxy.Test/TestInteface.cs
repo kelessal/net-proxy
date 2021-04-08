@@ -10,7 +10,7 @@ namespace Net.Proxy.Test
     {
         [Obsolete]
         new string Name { get; set; }
-        public int MyDefaultAge
+        public new int MyDefaultAge
         {
             get { return 43; }
         }
@@ -20,6 +20,7 @@ namespace Net.Proxy.Test
         int Age { get; }
         [Display(AutoGenerateField =true)]
         string Name { get; set; }
+        int MyDefaultAge { get; set; }
 
        
     }
