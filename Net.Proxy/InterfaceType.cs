@@ -91,6 +91,7 @@ namespace Net.Proxy
                         | BindingFlags.Instance);
 
                     var newPropertyInfos = typeProperties
+                        .Where(p=>p.GetMethod.IsAbstract)
                         .Where(x => !propertyNameSet.Contains(x.Name)).ToArray();
 
                     propertyInfos.InsertRange(0, newPropertyInfos);

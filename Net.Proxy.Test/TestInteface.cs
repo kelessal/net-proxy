@@ -15,5 +15,10 @@ namespace Net.Proxy.Test
         int Age { get; }
         [Display(AutoGenerateField =true)]
         string Name { get; set; }
+
+        public int MyDefaultAge
+        {
+            get { return 43; }
+        }
     }
 }

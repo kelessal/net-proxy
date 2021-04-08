@@ -11,6 +11,7 @@ namespace Net.Proxy.Test
         public void CreateTestType()
         {
             var result=InterfaceType.NewProxy<TestInteface>();
+            var x = result.MyDefaultAge;
             Assert.Equal("Net.Proxy", result.GetType().Namespace);
         }
         [Fact]
