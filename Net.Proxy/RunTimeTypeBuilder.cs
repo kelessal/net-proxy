@@ -80,6 +80,24 @@ namespace Net.Proxy
             return propertyBuilder;
 
         }
+        public static PropertyBuilder AddInterfaceDefaultProperty(this TypeBuilder tb, PropertyInfo propInfo)
+        {
+            var propertyName = propInfo.Name ;
+            var propertyType = propInfo.PropertyType;
+            PropertyBuilder propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
+            MethodBuilder getPropMthdBldr = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual, propertyType, Type.EmptyTypes);
+            ILGenerator getIl = getPropMthdBldr.GetILGenerator();
+            getIl.Emit(OpCodes.Ldarg_0);
+            getIl.EmitCall(OpCodes.Call, propInfo.GetMethod,Type.EmptyTypes);
+            getIl.Emit(OpCodes.Ret);
+
+           
+
+            propertyBuilder.SetGetMethod(getPropMthdBldr);
+
+            return propertyBuilder;
+
+        }
         public static PropertyBuilder SetPropertyAttribute<TAttribute>(this PropertyBuilder pb, Type[] ctorParamTypes, object[] ctorParamObjects, PropertyInfo[] propertyInfos = null, object[] propertyValues = null)
             where TAttribute : Attribute
         {

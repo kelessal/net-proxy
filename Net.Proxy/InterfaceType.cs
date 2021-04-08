@@ -39,7 +39,9 @@ namespace Net.Proxy
                 proxyTypeBuilder.AddInterfaceImplementation(interfaceType);
                 foreach (var prop in FindProperties(interfaceType))
                 {
-                    var propertyBuilder=proxyTypeBuilder.AddProperty(prop.Name, prop.PropertyType);
+                    var propertyBuilder=!prop.GetMethod.IsAbstract?
+                        proxyTypeBuilder.AddInterfaceDefaultProperty(prop):
+                        proxyTypeBuilder.AddProperty(prop.Name, prop.PropertyType);
                     var attrData = prop.GetCustomAttributesData();
                     foreach(var data in attrData)
                     {
@@ -91,7 +93,7 @@ namespace Net.Proxy
                         | BindingFlags.Instance);
 
                     var newPropertyInfos = typeProperties
-                        .Where(p=>p.GetMethod.IsAbstract)
+                        //.Where(p=>p.GetMethod.IsAbstract)
                         .Where(x => !propertyNameSet.Contains(x.Name)).ToArray();
 
                     propertyInfos.InsertRange(0, newPropertyInfos);

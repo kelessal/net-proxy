@@ -5,10 +5,15 @@ using System.Text;
 
 namespace Net.Proxy.Test
 {
+    
     public interface TestInteface:TestInterfaceBase
     {
         [Obsolete]
         new string Name { get; set; }
+        public int MyDefaultAge
+        {
+            get { return 43; }
+        }
     }
     public interface TestInterfaceBase
     {
@@ -16,9 +21,6 @@ namespace Net.Proxy.Test
         [Display(AutoGenerateField =true)]
         string Name { get; set; }
 
-        public int MyDefaultAge
-        {
-            get { return 43; }
-        }
+       
     }
 }
