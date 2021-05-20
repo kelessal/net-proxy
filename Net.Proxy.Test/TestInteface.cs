@@ -21,7 +21,18 @@ namespace Net.Proxy.Test
         [Display(AutoGenerateField =true)]
         string Name { get; set; }
         int MyDefaultAge { get; set; }
-
+        [Test(new string[] { "A", "B" })]
+        int ComputedProp => this.MyDefaultAge;
        
+    }
+    [AttributeUsage(AttributeTargets.Property)]
+    public class TestAttribute:Attribute
+    {
+        public string[] Items { get; set; }
+        public TestAttribute(string[] items)
+        {
+            this.Items = items;
+
+        }
     }
 }
