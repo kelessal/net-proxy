@@ -64,7 +64,6 @@ namespace Net.Proxy
             ILGenerator setIl = setPropMthdBldr.GetILGenerator();
             Label modifyProperty = setIl.DefineLabel();
             Label exitSet = setIl.DefineLabel();
-
             setIl.MarkLabel(modifyProperty);
             setIl.Emit(OpCodes.Ldarg_0);
             setIl.Emit(OpCodes.Ldarg_1);
@@ -115,9 +114,6 @@ namespace Net.Proxy
 
             propertyBuilder.SetGetMethod(getPropMthdBldr);
             propertyBuilder.SetSetMethod(setPropMthdBldr);
-
-
-            propertyBuilder.SetGetMethod(getPropMthdBldr);
 
             return propertyBuilder;
 

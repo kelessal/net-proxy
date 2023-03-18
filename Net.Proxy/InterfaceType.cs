@@ -11,7 +11,65 @@ namespace Net.Proxy
     public static class InterfaceType
     {
         static ConcurrentDictionary<Type, Type> _ConcreteTypes = new ConcurrentDictionary<Type, Type>();
+        static MethodInfo ProxyDataSetChangeMethodInfo = typeof(ProxyData).GetMethod("SetChanged", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        static MethodInfo ProxyDataToStringMethodInfo = typeof(ProxyData).GetMethod("ToString", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
+        static PropertyBuilder AddProxyDataProperty(TypeBuilder tb, string propertyName, Type propertyType)
+        {
+            FieldBuilder privateField = tb.DefineField("_" + propertyName, propertyType, FieldAttributes.Private);
+            PropertyBuilder propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
+            MethodBuilder getPropMthdBldr = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual, propertyType, Type.EmptyTypes);
+            ILGenerator getIl = getPropMthdBldr.GetILGenerator();
+
+            getIl.Emit(OpCodes.Ldarg_0);
+            getIl.Emit(OpCodes.Ldfld, privateField);
+            getIl.Emit(OpCodes.Ret);
+
+            MethodBuilder setPropMthdBldr =
+                tb.DefineMethod("set_" + propertyName,
+                  MethodAttributes.Public |
+                  MethodAttributes.SpecialName |
+                  MethodAttributes.HideBySig |
+                  MethodAttributes.Virtual,
+                  null, new[] { propertyType });
+
+            ILGenerator setIl = setPropMthdBldr.GetILGenerator();
+            Label exitSet = setIl.DefineLabel();
+            Label mainLabel = setIl.DefineLabel();
+            setIl.Emit(OpCodes.Ldarg_0);
+            setIl.Emit(OpCodes.Ldstr, propertyName);
+            setIl.Emit(OpCodes.Ldarg_0);
+            setIl.Emit(OpCodes.Ldfld,privateField);
+            setIl.Emit(OpCodes.Box, propertyType);
+            setIl.Emit(OpCodes.Ldarg_1);
+            setIl.Emit(OpCodes.Box, propertyType);
+            setIl.Emit(OpCodes.Call, ProxyDataSetChangeMethodInfo);
+            setIl.Emit(OpCodes.Brfalse,exitSet);
+            setIl.MarkLabel(mainLabel);
+            setIl.Emit(OpCodes.Ldarg_0);
+            setIl.Emit(OpCodes.Ldarg_1);
+            setIl.Emit(OpCodes.Stfld, privateField);
+
+            setIl.Emit(OpCodes.Nop);
+            setIl.MarkLabel(exitSet);
+            setIl.Emit(OpCodes.Ret);
+
+
+            //setIl.Emit(OpCodes.Ldarg_1);
+            //setIl.Emit(OpCodes.Ldfld, fieldBuilder);
+            //setIl.EmitCall(OpCodes.Call, ProxyDataSetChangeMethodInfo,new Type[] {typeof(string),typeof(object),typeof(object)});
+            //setIl.Emit(OpCodes.Brfalse,exitSet);
+            //setIl.Emit(OpCodes.Nop);
+            //setIl.Emit(OpCodes.Ldarg_0);
+            //setIl.Emit(OpCodes.Ldarg_1);
+            //setIl.Emit(OpCodes.Stfld, fieldBuilder);
+
+            propertyBuilder.SetGetMethod(getPropMthdBldr);
+            propertyBuilder.SetSetMethod(setPropMthdBldr);
+
+            return propertyBuilder;
+
+        }
         public static Type GetProxyType(this Type interfaceType)
         {
             if (!interfaceType.IsInterface)
@@ -35,7 +93,7 @@ namespace Net.Proxy
                 }
 
                 var typeName = $"{interfaceType.Name.Substring(1)}_interface_proxy";
-                var proxyTypeBuilder = RuntimeTypeBuilder.CreateTypeBuilder(typeName);
+                var proxyTypeBuilder = RuntimeTypeBuilder.CreateTypeBuilder(typeName,typeof(ProxyData));
                 proxyTypeBuilder.AddInterfaceImplementation(interfaceType);
                 foreach (var prop in FindProperties(interfaceType))
                 {
@@ -44,7 +102,7 @@ namespace Net.Proxy
                         proxyTypeBuilder.AddInterfaceDefaultProperty(prop);
                         continue;
                     }
-                    var propertyBuilder= proxyTypeBuilder.AddProperty(prop.Name, prop.PropertyType);
+                    var propertyBuilder= AddProxyDataProperty(proxyTypeBuilder,prop.Name, prop.PropertyType);
                     var attrData = prop.GetCustomAttributesData();
                     foreach(var data in attrData)
                     {
@@ -62,13 +120,25 @@ namespace Net.Proxy
                         propertyBuilder.SetCustomAttribute(attrBuilder);
                     }
                 }
+                var toStringMethod = interfaceType.GetMethod("ToString", BindingFlags.Public | BindingFlags.Instance);
+                if (toStringMethod != null && toStringMethod.ReturnType == typeof(string))
+                {
+                    var toStringBuilder = proxyTypeBuilder.DefineMethod("ToString", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.Virtual);
+                    toStringBuilder.SetReturnType(typeof(string));
+                    var il=toStringBuilder.GetILGenerator();
+                    il.Emit(OpCodes.Ldarg_0);
+                    il.Emit(OpCodes.Call, toStringMethod);
+                    il.Emit(OpCodes.Ret);
+                    proxyTypeBuilder.DefineMethodOverride(toStringBuilder, ProxyDataToStringMethodInfo);
+                }
+
                 var proxyType = proxyTypeBuilder.CreateTypeInfo();
                 _ConcreteTypes[interfaceType] = proxyType;
+               
                 return proxyType;
             }
 
         }
-
         internal static PropertyInfo[] FindProperties(Type type)
         {
             if (type.IsInterface)
@@ -111,7 +181,6 @@ namespace Net.Proxy
                 | BindingFlags.Public | BindingFlags.Instance);
 
         }
-
         public static T NewProxy<T>(Action<T> init=default)
         {
             var proxy = typeof(T).GetProxyType();

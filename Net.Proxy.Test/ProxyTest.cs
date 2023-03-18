@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reflection;
 using Xunit;
 
@@ -11,8 +11,12 @@ namespace Net.Proxy.Test
         public void CreateTestType()
         {
             var result=InterfaceType.NewProxy<TestInteface>();
-            //result.MyDefaultAge = 12;
-            var x = result.MyDefaultAge;
+            result.Ref = new EntityDescriptor() { Id = "1" };
+            var proxyData = result as IProxyData;
+            proxyData.StrictCompare = false;
+            result.SurName = "Salih";
+            proxyData.Status = ProxyDataStatus.UnModifed;
+            result.Ref = new EntityDescriptor() { Id = "1" ,Name="Salih"};
             Assert.Equal("Net.Proxy", result.GetType().Namespace);
         }
         [Fact]
