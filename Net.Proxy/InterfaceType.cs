@@ -11,7 +11,7 @@ namespace Net.Proxy
     public static class InterfaceType
     {
         static ConcurrentDictionary<Type, Type> _ConcreteTypes = new ConcurrentDictionary<Type, Type>();
-        static MethodInfo ProxyDataSetChangeMethodInfo = typeof(ProxyData).GetMethod("SetChanged", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        static MethodInfo ProxyDataSetChangeMethodInfo = typeof(ProxyData).GetMethod("SetChange", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         static MethodInfo ProxyDataToStringMethodInfo = typeof(ProxyData).GetMethod("ToString", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
         static PropertyBuilder AddProxyDataProperty(TypeBuilder tb, string propertyName, Type propertyType)

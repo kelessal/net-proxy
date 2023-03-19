@@ -13,9 +13,19 @@ namespace Net.Proxy.Test
             var result=InterfaceType.NewProxy<TestInteface>();
             result.Ref = new EntityDescriptor() { Id = "1" };
             var proxyData = result as IProxyData;
-            proxyData.StrictCompare = false;
+            proxyData.Status(ProxyDataStatus.UnModifed);
+            proxyData.StrictCompare(false);
+            var fields=proxyData.ChangedFields();
+            proxyData.SetChangedField("Abc", "Salih", "Keleş");
+            fields = proxyData.ChangedFields();
             result.SurName = "Salih";
-            proxyData.Status = ProxyDataStatus.UnModifed;
+            var hasOldValue = proxyData.HasOldValue("Abc");
+            fields = proxyData.ChangedFields();
+            proxyData.Status(ProxyDataStatus.UnModifed);
+            fields = proxyData.ChangedFields();
+            var aa=proxyData.Tag<string>();
+            proxyData.Tag(default, "abc");
+
             result.Ref = new EntityDescriptor() { Id = "1" ,Name="Salih"};
             Assert.Equal("Net.Proxy", result.GetType().Namespace);
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Net.Extensions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,35 +9,41 @@ namespace Net.Proxy
 {
     public abstract class ProxyData:IProxyData
     {
-        private bool _StrictCompare = false;
+        private bool _strictCompare = false;
         private ProxyDataStatus _status;
         private ConcurrentDictionary<string, dynamic> _initValues = new ConcurrentDictionary<string, dynamic>();
-        ProxyDataStatus IProxyData.Status
+        private ConcurrentDictionary<string, object> _tags = new ConcurrentDictionary<string, object>();
+
+        ProxyDataStatus IProxyData.Status(ProxyDataStatus? newStatus)
         {
-            get { return _status; }
-            set 
-            {
-                if (value == this._status) return;
-                this._initValues.Clear();
-                this._status = value;
-            }
+            if (!newStatus.HasValue) return this._status;
+            if (newStatus == this._status) return this._status;
+            this._initValues.Clear();
+            this._status = newStatus.Value;
+            return this._status;
         }
 
-        bool IProxyData.StrictCompare
+        bool IProxyData.StrictCompare(bool? newValue)
         {
-            get { return this._StrictCompare; }
-            set { this._StrictCompare = value; }
+            if (!newValue.HasValue) return this._strictCompare;
+            this._strictCompare = newValue.Value;
+            return this._strictCompare;
         }
 
         private bool IsEqualObject(dynamic oldValue,dynamic newValue)
         {
-            if (this._StrictCompare) return oldValue == newValue;
+            if (this._strictCompare) return oldValue == newValue;
             if (oldValue == newValue) return true;
             if (oldValue == null && newValue != null) return false;
             if (oldValue != null && newValue == null) return false;
             return oldValue.Equals(newValue);
         }
-        protected bool SetChanged(string field,dynamic oldValue,dynamic newValue)
+        bool IProxyData.SetChangedField(string field, dynamic oldValue, dynamic newValue)
+        {
+            return this.SetChange(field,oldValue, newValue);
+        }
+
+        protected bool SetChange(string field,dynamic oldValue,dynamic newValue)
         {
             switch (this._status)
             {
@@ -60,17 +67,44 @@ namespace Net.Proxy
                     return false;
             }
         }
-
-        IEnumerable<string> IProxyData.GetChangedFields()
+        IEnumerable<string> IProxyData.ChangedFields()
         {
             return this._initValues.Keys.AsEnumerable();
+        }
+        dynamic IProxyData.OldValue(string field)
+        {
+            return this._initValues.GetSafeValue(field);
+        }
+        bool IProxyData.HasOldValue(string field)
+        {
+            return this._initValues.ContainsKey(field);
+        }
+
+        T IProxyData.Tag<T>(string key)
+        {
+            key = key.IsEmpty() ? "default" : key;
+            if (this._tags.TryGetValue(key, out var result))
+                return (T)result;
+            return default(T);
+        }
+
+        void IProxyData.Tag<T>(string key, T item)
+        {
+            key = key.IsEmpty() ? "default" : key;
+            this._tags.AddOrUpdate(key, item, (old, value) => item);
         }
     }
     public interface IProxyData
     {
-        bool StrictCompare { get; set; }
-        ProxyDataStatus Status { get; set; }
-        IEnumerable<string> GetChangedFields();
+        bool StrictCompare(bool? strictCompare);
+        ProxyDataStatus Status(ProxyDataStatus? status);
+        IEnumerable<string> ChangedFields();
+        bool SetChangedField(string field,dynamic oldValue,dynamic newValue);
+        dynamic OldValue(string field);
+        bool HasOldValue(string field);
+        T Tag<T>(string key=default);
+        void Tag<T>(string key, T field);
+
     }
     public enum ProxyDataStatus
     {

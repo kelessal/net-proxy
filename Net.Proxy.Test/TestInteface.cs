@@ -21,27 +21,7 @@ namespace Net.Proxy.Test
             return this.SurName;
         }
     }
-    public class MyData : ProxyData
-    {
-        private int _initValue;
-        string CallToString()
-        {
-            return "myname";
-        }
-        public int TestAge
-        {
-            get { return this._initValue; }
-            set
-            {
-                if (this.SetChanged("TestAge", this._initValue, value))
-                    this._initValue = value;
-            }
-        }
-        public override string ToString()
-        {
-            return CallToString();
-        }
-    }
+    
     public class EntityDescriptor
     {
         public string Id { get; set; }
