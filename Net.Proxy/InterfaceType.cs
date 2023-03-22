@@ -16,6 +16,7 @@ namespace Net.Proxy
 
         static PropertyBuilder AddProxyDataProperty(TypeBuilder tb, string propertyName, Type propertyType)
         {
+           
             FieldBuilder privateField = tb.DefineField("_" + propertyName, propertyType, FieldAttributes.Private);
             PropertyBuilder propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
             MethodBuilder getPropMthdBldr = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual, propertyType, Type.EmptyTypes);
@@ -102,7 +103,8 @@ namespace Net.Proxy
                         proxyTypeBuilder.AddInterfaceDefaultProperty(prop);
                         continue;
                     }
-                    var propertyBuilder= AddProxyDataProperty(proxyTypeBuilder,prop.Name, prop.PropertyType);
+                    var noTrace = prop.GetCustomAttributes().OfType<NoTraceAttribute>().Any();
+                    var propertyBuilder =noTrace?proxyTypeBuilder.AddProperty(prop.Name,prop.PropertyType): AddProxyDataProperty(proxyTypeBuilder,prop.Name, prop.PropertyType);
                     var attrData = prop.GetCustomAttributesData();
                     foreach(var data in attrData)
                     {

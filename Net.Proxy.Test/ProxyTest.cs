@@ -19,7 +19,7 @@ namespace Net.Proxy.Test
             proxyData.SetChangedField("Abc", "Salih", "Keleş");
             fields = proxyData.ChangedFields();
             result.SurName = "Salih";
-            var hasOldValue = proxyData.HasOldValue("Abc");
+            var hasOldValue = proxyData.IsChangedField("Abc");
             fields = proxyData.ChangedFields();
             proxyData.Status(ProxyDataStatus.UnModifed);
             fields = proxyData.ChangedFields();
@@ -35,6 +35,42 @@ namespace Net.Proxy.Test
             var result = InterfaceType.NewProxy<TestInteface>();
             var nameProperty=result.GetType().GetProperty("Name");
             var attrs=nameProperty.GetCustomAttributes();
+        }
+        [Fact]
+        public void NoTraceTest()
+        {
+            var result = InterfaceType.NewProxy<TestInteface>();
+            var proxy = result as IProxyData;
+            proxy.Status(ProxyDataStatus.UnModifed);
+            result.SurName = "Keleş";
+            var found = proxy.Status(default);
+        }
+        [Fact]
+        public void ChangedObjectTest()
+        {
+            var result = InterfaceType.NewProxy<TestInteface>();
+            var proxy = result as IProxyData;
+            proxy.Status(ProxyDataStatus.UnModifed);
+            result.SurName = "Keleş";
+            var found = proxy.GetChangedObject();
+        }
+        [Fact]
+        public void StringEqualTest()
+        {
+            var result = InterfaceType.NewProxy<TestInteface>();
+            var proxy = result as IProxyData;
+            proxy.Status(ProxyDataStatus.UnModifed);
+            result.SecondName = "sa";
+            var found = proxy.GetChangedObject();
+        }
+        [Fact]
+        public void EnumerableEqualTest()
+        {
+            var result = InterfaceType.NewProxy<TestInteface>();
+            var proxy = result as IProxyData;
+            proxy.Status(ProxyDataStatus.UnModifed);
+            result.RefList = new EntityDescriptor[] { new EntityDescriptor()};
+            var found = proxy.GetChangedObject();
         }
     }
 }

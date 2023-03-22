@@ -14,14 +14,21 @@ namespace Net.Proxy.Test
         {
             get { return 43; }
         }
+        [NoTraceCustom]
         string SurName { get; set; }
+        string SecondName { get; set; }
+        EntityDescriptor[] RefList { get; set; }
         EntityDescriptor Ref { get; set; }
         public string ToString()
         {
             return this.SurName;
         }
     }
-    
+    [AttributeUsage(AttributeTargets.Property)]
+    public class NoTraceCustomAttribute : NoTraceAttribute
+    {
+
+    }
     public class EntityDescriptor
     {
         public string Id { get; set; }
