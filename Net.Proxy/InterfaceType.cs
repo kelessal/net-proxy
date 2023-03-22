@@ -11,6 +11,8 @@ namespace Net.Proxy
     public static class InterfaceType
     {
         static ConcurrentDictionary<Type, Type> _ConcreteTypes = new ConcurrentDictionary<Type, Type>();
+        static ConcurrentDictionary<Type, Type> _InterfaceTypes = new ConcurrentDictionary<Type, Type>();
+
         static MethodInfo ProxyDataSetChangeMethodInfo = typeof(ProxyData).GetMethod("SetChange", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         static MethodInfo ProxyDataToStringMethodInfo = typeof(ProxyData).GetMethod("ToString", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
@@ -71,6 +73,18 @@ namespace Net.Proxy
             return propertyBuilder;
 
         }
+        static Type BindTypes(Type interfaceType,Type concreteType)
+        {
+            _ConcreteTypes[interfaceType] = concreteType;
+            _InterfaceTypes[concreteType] = interfaceType;
+            return concreteType;
+        }
+        public static Type GetIntefaceTypeOfProxy(object obj)
+        {
+            if (obj == null) return null;
+            var type = obj.GetType();
+            return _InterfaceTypes.GetSafeValue(type);
+        }
         public static Type GetProxyType(this Type interfaceType)
         {
             if (!interfaceType.IsInterface)
@@ -83,14 +97,14 @@ namespace Net.Proxy
 
                 if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
                 {
-                    _ConcreteTypes[interfaceType] = typeof(Dictionary<,>).MakeGenericType(interfaceType.GetGenericArguments());
-                    return _ConcreteTypes[interfaceType];
+                    var concreteType = typeof(Dictionary<,>).MakeGenericType(interfaceType.GetGenericArguments());
+                   return BindTypes(interfaceType,concreteType);
                 }
 
                 if (interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == typeof(IEqualityComparer<>))
                 {
-                    _ConcreteTypes[interfaceType] = typeof(EqualityComparer<>).MakeGenericType(interfaceType.GetGenericArguments());
-                    return _ConcreteTypes[interfaceType];
+                    var concreteType = typeof(EqualityComparer<>).MakeGenericType(interfaceType.GetGenericArguments());
+                    return BindTypes(interfaceType, concreteType);
                 }
 
                 var typeName = $"{interfaceType.Name.Substring(1)}_interface_proxy";
@@ -135,9 +149,7 @@ namespace Net.Proxy
                 }
 
                 var proxyType = proxyTypeBuilder.CreateTypeInfo();
-                _ConcreteTypes[interfaceType] = proxyType;
-               
-                return proxyType;
+                return BindTypes(interfaceType,proxyType);
             }
 
         }

@@ -44,6 +44,7 @@ namespace Net.Proxy.Test
             proxy.Status(ProxyDataStatus.UnModifed);
             result.SurName = "Keleş";
             var found = proxy.Status(default);
+            var intType=InterfaceType.GetIntefaceTypeOfProxy(result);
         }
         [Fact]
         public void ChangedObjectTest()
