@@ -17,7 +17,8 @@ namespace Net.Proxy.Test
         [NoTraceCustom]
         string SurName { get; set; }
         string SecondName { get; set; }
-        EntityDescriptor[] RefList { get; set; }
+        double RealAge { get; set; }
+        IEnumerable<EntityDescriptor> RefList { get; set; }
         EntityDescriptor Ref { get; set; }
         public string ToString()
         {
@@ -25,7 +26,7 @@ namespace Net.Proxy.Test
         }
     }
     [AttributeUsage(AttributeTargets.Property)]
-    public class NoTraceCustomAttribute : NoTraceAttribute
+    public class NoTraceCustomAttribute : NoTrackDataAttribute
     {
 
     }

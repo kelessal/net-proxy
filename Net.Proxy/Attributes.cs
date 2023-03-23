@@ -5,7 +5,7 @@ using System.Text;
 namespace Net.Proxy
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class NoTraceAttribute:Attribute
+    public class NoTrackDataAttribute:Attribute
     {
     }
     

@@ -13,7 +13,7 @@ namespace Net.Proxy
         static ConcurrentDictionary<Type, Type> _ConcreteTypes = new ConcurrentDictionary<Type, Type>();
         static ConcurrentDictionary<Type, Type> _InterfaceTypes = new ConcurrentDictionary<Type, Type>();
 
-        static MethodInfo ProxyDataSetChangeMethodInfo = typeof(ProxyData).GetMethod("SetChange", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        static MethodInfo ProxyDataGetChangeNewValueMethodInfo = typeof(ProxyData).GetMethod("GetChangedNewValue", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         static MethodInfo ProxyDataToStringMethodInfo = typeof(ProxyData).GetMethod("ToString", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
         static PropertyBuilder AddProxyDataProperty(TypeBuilder tb, string propertyName, Type propertyType)
@@ -38,7 +38,8 @@ namespace Net.Proxy
 
             ILGenerator setIl = setPropMthdBldr.GetILGenerator();
             Label exitSet = setIl.DefineLabel();
-            Label mainLabel = setIl.DefineLabel();
+            //Label mainLabel = setIl.DefineLabel();
+            setIl.Emit(OpCodes.Ldarg_0);
             setIl.Emit(OpCodes.Ldarg_0);
             setIl.Emit(OpCodes.Ldstr, propertyName);
             setIl.Emit(OpCodes.Ldarg_0);
@@ -46,11 +47,13 @@ namespace Net.Proxy
             setIl.Emit(OpCodes.Box, propertyType);
             setIl.Emit(OpCodes.Ldarg_1);
             setIl.Emit(OpCodes.Box, propertyType);
-            setIl.Emit(OpCodes.Call, ProxyDataSetChangeMethodInfo);
-            setIl.Emit(OpCodes.Brfalse,exitSet);
-            setIl.MarkLabel(mainLabel);
-            setIl.Emit(OpCodes.Ldarg_0);
-            setIl.Emit(OpCodes.Ldarg_1);
+            setIl.Emit(OpCodes.Call, ProxyDataGetChangeNewValueMethodInfo);
+            setIl.Emit(OpCodes.Unbox_Any, propertyType);
+            //setIl.Emit(OpCodes.Castclass, propertyType);
+            //setIl.Emit(OpCodes.Brfalse,exitSet);
+            //setIl.MarkLabel(mainLabel);
+            //setIl.Emit(OpCodes.Ldarg_0);
+            //setIl.Emit(OpCodes.Ldarg_1);
             setIl.Emit(OpCodes.Stfld, privateField);
 
             setIl.Emit(OpCodes.Nop);
@@ -117,7 +120,7 @@ namespace Net.Proxy
                         proxyTypeBuilder.AddInterfaceDefaultProperty(prop);
                         continue;
                     }
-                    var noTrace = prop.GetCustomAttributes().OfType<NoTraceAttribute>().Any();
+                    var noTrace = prop.GetCustomAttributes().OfType<NoTrackDataAttribute>().Any();
                     var propertyBuilder =noTrace?proxyTypeBuilder.AddProperty(prop.Name,prop.PropertyType): AddProxyDataProperty(proxyTypeBuilder,prop.Name, prop.PropertyType);
                     var attrData = prop.GetCustomAttributesData();
                     foreach(var data in attrData)

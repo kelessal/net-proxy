@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -10,25 +12,30 @@ namespace Net.Proxy.Test
         [Fact]
         public void CreateTestType()
         {
+            IEnumerable<EntityDescriptor> items = default;
             var result=InterfaceType.NewProxy<TestInteface>();
-            result.Ref = new EntityDescriptor() { Id = "1" };
-            var proxyData = result as IProxyData;
-            proxyData.Status(ProxyDataStatus.UnModifed);
-            proxyData.StrictCompare(false);
-            var fields=proxyData.ChangedFields();
-            proxyData.SetChangedField("Abc", "Salih", "Keleş");
-            fields = proxyData.ChangedFields();
-            result.SurName = "Salih";
-            var hasOldValue = proxyData.IsChangedField("Abc");
-            fields = proxyData.ChangedFields();
-            proxyData.Status(ProxyDataStatus.UnModifed);
-            fields = proxyData.ChangedFields();
-            var aa=proxyData.Tag<string>();
-            proxyData.Tag(default, "abc");
-
-            result.Ref = new EntityDescriptor() { Id = "1" ,Name="Salih"};
-            Assert.Equal("Net.Proxy", result.GetType().Namespace);
+            var proxy=result as IProxyData;
+            proxy.Lock("RealAge", true);
+            proxy.Lock("RealAge", false);
+            result.RealAge = 3.0;
+            proxy.Status(ProxyDataStatus.UnModifed);
+            result.SecondName = "Salih";
+            proxy.SetChangedField("RealAge");
+            //proxy.FieldChanging += Proxy_FieldChanging;
+            //result.Ref = new EntityDescriptor() { Id = "1" };
+            var list1 = new[] { new EntityDescriptor { Id = "2",Name="Salih" } };
+            var list2 = new[] { new EntityDescriptor { Id = "2" , Name = "Acaba" } };
+            items = list1;
+            result.RefList = list1;
+            result.RefList = list2;
+            Assert.Equal(result.RefList,list2);
         }
+
+        private void Proxy_FieldChanging(object sender, FieldChangingEventArgs e)
+        {
+            e.NewValue = new[] { new EntityDescriptor() { Id = "2" } };
+        }
+
         [Fact]
         public void FindTypeProperties()
         {
