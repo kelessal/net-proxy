@@ -16,8 +16,10 @@ namespace Net.Proxy.Test
         }
         [NoTraceCustom]
         string SurName { get; set; }
+        [StrictCompareData]
         string SecondName { get; set; }
         double RealAge { get; set; }
+        [StrictCompareData]
         IEnumerable<EntityDescriptor> RefList { get; set; }
         EntityDescriptor Ref { get; set; }
         public string ToString()

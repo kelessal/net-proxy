@@ -11,12 +11,10 @@ namespace Net.Proxy
 {
     public abstract class ProxyData:IProxyData
     {
-        private bool _strictCompare = false;
         private ProxyDataStatus _status;
         private ConcurrentSet<string> _lockedFields=new ConcurrentSet<string>();
         private ConcurrentDictionary<string, dynamic> _initValues = new ConcurrentDictionary<string, dynamic>();
         private ConcurrentDictionary<string, dynamic> _newValues = new ConcurrentDictionary<string, dynamic>();
-
         private ConcurrentDictionary<string, object> _tags = new ConcurrentDictionary<string, object>();
 
         public event EventHandler<FieldChangingEventArgs> FieldChanging;
@@ -29,13 +27,7 @@ namespace Net.Proxy
             this._status = newStatus.Value;
             return this._status;
         }
-
-        bool IProxyData.StrictCompare(bool? newValue)
-        {
-            if (!newValue.HasValue) return this._strictCompare;
-            this._strictCompare = newValue.Value;
-            return this._strictCompare;
-        }
+        
         void IProxyData.SetChangedField(string field)
         {
             if (this._status == ProxyDataStatus.Locked) throw new Exception("Proxy Data is Locked");
@@ -50,9 +42,9 @@ namespace Net.Proxy
             this._status = ProxyDataStatus.Modified;
         }
 
-        private bool IsEqualObject(object oldValue,object newValue)
+        private bool IsEqualObject(object oldValue,object newValue,bool strictCompare)
         {
-            if (this._strictCompare) return oldValue == newValue;
+            if (strictCompare) return oldValue == newValue;
             if (oldValue is string strOld && strOld.IsEmpty())
                 oldValue = null;
             if (newValue is string strNew && strNew.IsEmpty())
@@ -72,7 +64,7 @@ namespace Net.Proxy
                     if(!newDictionary.Contains(key)) return false;
                     var oldDicValue = oldDictionary[key];
                     var newDicValue = newDictionary[key];
-                    if(!this.IsEqualObject(oldDicValue,newDicValue)) return false;
+                    if(!this.IsEqualObject(oldDicValue,newDicValue,false)) return false;
                 }
                 return true;
             }
@@ -85,18 +77,18 @@ namespace Net.Proxy
                 {
                     var oldListItem=oldArray[i];
                     var newListItem=newArray[i];
-                    if (!this.IsEqualObject(oldListItem, newListItem)) return false;
+                    if (!this.IsEqualObject(oldListItem, newListItem,false)) return false;
                 }
                 return true;
             }
             return oldValue.Equals(newValue);
         }
-        protected object GetChangedNewValue(string field,object oldValue,object newValue)
+        protected object GetChangedNewValue(string field,object oldValue,object newValue,bool strictCompare)
         {
             if (this._lockedFields.Contains(field)) return oldValue;
             if (this._status == ProxyDataStatus.Locked) return oldValue;
             if (this._status == ProxyDataStatus.Removed) return oldValue;
-            var isEqual = this.IsEqualObject(oldValue,newValue);
+            var isEqual = this.IsEqualObject(oldValue,newValue,strictCompare);
             if(!isEqual && !this.FieldChanging.IsNull())
             {
                 var args=new FieldChangingEventArgs(field,oldValue,newValue);
@@ -110,9 +102,9 @@ namespace Net.Proxy
                 case ProxyDataStatus.New: return newValue;
                 case ProxyDataStatus.Modified:
                 case ProxyDataStatus.UnModifed:
-                    if (IsEqualObject(oldValue,newValue)) return newValue;
+                    if (IsEqualObject(oldValue,newValue,strictCompare)) return newValue;
                     var isSameWithInitialValue=this._initValues.ContainsKey(field) 
-                        && this.IsEqualObject(this._initValues[field], newValue);
+                        && this.IsEqualObject(this._initValues[field], newValue,strictCompare);
                     if (isSameWithInitialValue)
                     {
                         this._initValues.TryRemove(field, out _);
@@ -186,7 +178,6 @@ namespace Net.Proxy
     {
         event EventHandler<FieldChangingEventArgs> FieldChanging;
         ExpandoObject GetChangedObject();
-        bool StrictCompare(bool? strictCompare=default);
         ProxyDataStatus Status(ProxyDataStatus? status=default);
         bool Lock(string field, bool? lockField=default);
         IEnumerable<string> ChangedFields();

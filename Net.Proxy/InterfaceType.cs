@@ -16,18 +16,16 @@ namespace Net.Proxy
         static MethodInfo ProxyDataGetChangeNewValueMethodInfo = typeof(ProxyData).GetMethod("GetChangedNewValue", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         static MethodInfo ProxyDataToStringMethodInfo = typeof(ProxyData).GetMethod("ToString", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-        static PropertyBuilder AddProxyDataProperty(TypeBuilder tb, string propertyName, Type propertyType)
+        static PropertyBuilder AddProxyDataProperty(TypeBuilder tb, string propertyName, Type propertyType,bool strictCompare)
         {
            
             FieldBuilder privateField = tb.DefineField("_" + propertyName, propertyType, FieldAttributes.Private);
             PropertyBuilder propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
             MethodBuilder getPropMthdBldr = tb.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.Virtual, propertyType, Type.EmptyTypes);
             ILGenerator getIl = getPropMthdBldr.GetILGenerator();
-
             getIl.Emit(OpCodes.Ldarg_0);
             getIl.Emit(OpCodes.Ldfld, privateField);
             getIl.Emit(OpCodes.Ret);
-
             MethodBuilder setPropMthdBldr =
                 tb.DefineMethod("set_" + propertyName,
                   MethodAttributes.Public |
@@ -47,6 +45,10 @@ namespace Net.Proxy
             setIl.Emit(OpCodes.Box, propertyType);
             setIl.Emit(OpCodes.Ldarg_1);
             setIl.Emit(OpCodes.Box, propertyType);
+            if (strictCompare)
+                setIl.Emit(OpCodes.Ldc_I4_1);
+            else
+                setIl.Emit(OpCodes.Ldc_I4_0);
             setIl.Emit(OpCodes.Call, ProxyDataGetChangeNewValueMethodInfo);
             setIl.Emit(OpCodes.Unbox_Any, propertyType);
             //setIl.Emit(OpCodes.Castclass, propertyType);
@@ -121,7 +123,8 @@ namespace Net.Proxy
                         continue;
                     }
                     var noTrace = prop.GetCustomAttributes().OfType<NoTrackDataAttribute>().Any();
-                    var propertyBuilder =noTrace?proxyTypeBuilder.AddProperty(prop.Name,prop.PropertyType): AddProxyDataProperty(proxyTypeBuilder,prop.Name, prop.PropertyType);
+                    var strictCompare = prop.GetCustomAttributes().OfType<StrictCompareDataAttribute>().Any();
+                    var propertyBuilder =noTrace?proxyTypeBuilder.AddProperty(prop.Name,prop.PropertyType): AddProxyDataProperty(proxyTypeBuilder,prop.Name, prop.PropertyType,strictCompare);
                     var attrData = prop.GetCustomAttributesData();
                     foreach(var data in attrData)
                     {

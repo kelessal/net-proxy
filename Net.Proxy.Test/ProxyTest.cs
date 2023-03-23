@@ -20,8 +20,10 @@ namespace Net.Proxy.Test
             result.RealAge = 3.0;
             proxy.Status(ProxyDataStatus.UnModifed);
             result.SecondName = "Salih";
+            proxy.FieldChanging += Proxy_FieldChanging;
+            result.SecondName = "Keleş";
+            result.RealAge = 3;
             proxy.SetChangedField("RealAge");
-            //proxy.FieldChanging += Proxy_FieldChanging;
             //result.Ref = new EntityDescriptor() { Id = "1" };
             var list1 = new[] { new EntityDescriptor { Id = "2",Name="Salih" } };
             var list2 = new[] { new EntityDescriptor { Id = "2" , Name = "Acaba" } };
@@ -33,7 +35,7 @@ namespace Net.Proxy.Test
 
         private void Proxy_FieldChanging(object sender, FieldChangingEventArgs e)
         {
-            e.NewValue = new[] { new EntityDescriptor() { Id = "2" } };
+            //e.NewValue = new[] { new EntityDescriptor() { Id = "2" } };
         }
 
         [Fact]
