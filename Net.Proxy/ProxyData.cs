@@ -124,11 +124,11 @@ namespace Net.Proxy
                     return newValue;
             }
         }
-        IEnumerable<string> IProxyData.ChangedFields()
+        IEnumerable<string> IProxyData.GetChangedFields()
         {
             return this._newValues.Keys.AsEnumerable();
         }
-        dynamic IProxyData.OldValue(string field)
+        dynamic IProxyData.InitValue(string field)
         {
             return this._initValues.GetSafeValue(field);
         }
@@ -163,7 +163,14 @@ namespace Net.Proxy
                 result[kv.Key] = kv.Value;
             return (ExpandoObject)result;
         }
-
+        ExpandoObject IProxyData.GetInitObject()
+        {
+            if (this._initValues.IsEmpty()) return default;
+            var result = new ExpandoObject() as IDictionary<string, object>;
+            foreach (var kv in this._initValues)
+                result[kv.Key] = kv.Value;
+            return (ExpandoObject)result;
+        }
         public bool Lock(string field,bool? lockStatus = null)
         {
             if (!lockStatus.HasValue) return this._lockedFields.Contains(field);
@@ -178,12 +185,13 @@ namespace Net.Proxy
     {
         event EventHandler<FieldChangingEventArgs> FieldChanging;
         ExpandoObject GetChangedObject();
+        ExpandoObject GetInitObject();
         ProxyDataStatus Status(ProxyDataStatus? status=default);
         bool Lock(string field, bool? lockField=default);
-        IEnumerable<string> ChangedFields();
+        IEnumerable<string> GetChangedFields();
         void SetChangedField(string field);
-        dynamic OldValue(string field);
-        dynamic NewValue(string field);
+        object InitValue(string field);
+        object NewValue(string field);
         bool IsChangedField(string field);
         T Tag<T>(string key=default);
         void Tag<T>(string key, T field);
