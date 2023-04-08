@@ -16,7 +16,7 @@ namespace Net.Proxy
         private ConcurrentDictionary<string, dynamic> _initValues = new ConcurrentDictionary<string, dynamic>();
         private ConcurrentDictionary<string, dynamic> _newValues = new ConcurrentDictionary<string, dynamic>();
         private ConcurrentDictionary<string, object> _tags = new ConcurrentDictionary<string, object>();
-
+        private int _version;
         public event EventHandler<FieldChangingEventArgs> FieldChanging;
         ProxyDataStatus IProxyData.Status(ProxyDataStatus? newStatus)
         {
@@ -27,7 +27,10 @@ namespace Net.Proxy
             this._status = newStatus.Value;
             return this._status;
         }
-        
+        int IProxyData.Version()
+        {
+            return this._version;
+        }
         void IProxyData.SetChangedField(string field)
         {
             if (this._status == ProxyDataStatus.Locked) throw new Exception("Proxy Data is Locked");
@@ -115,8 +118,8 @@ namespace Net.Proxy
                         this._initValues[field] = oldValue;
                         this._newValues[field] = newValue;
                     }
-                    this._status =this._initValues.Count==0?
-                        ProxyDataStatus.UnModifed:ProxyDataStatus.Modified;
+                    this._version++;
+                    this._status = ProxyDataStatus.Modified;
                     return newValue;
                 case ProxyDataStatus.Removed: return oldValue;
                 case ProxyDataStatus.Locked: return oldValue;
@@ -186,6 +189,7 @@ namespace Net.Proxy
         event EventHandler<FieldChangingEventArgs> FieldChanging;
         ExpandoObject GetChangedObject();
         ExpandoObject GetInitObject();
+        int Version();
         ProxyDataStatus Status(ProxyDataStatus? status=default);
         bool Lock(string field, bool? lockField=default);
         IEnumerable<string> GetChangedFields();
