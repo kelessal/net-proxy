@@ -11,7 +11,7 @@
     <PackageIconUrl>https://github.com/kelessal/net-proxy/blob/master/images/infinity.png</PackageIconUrl>
     <PackageTags>interface runtime proxy concrete</PackageTags>
     <LangVersion>latest</LangVersion>
-    <Version>5.5</Version>
+    <Version>5.6</Version>
   </PropertyGroup>
 
   <ItemGroup>

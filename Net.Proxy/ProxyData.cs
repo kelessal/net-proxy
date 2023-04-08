@@ -102,7 +102,7 @@ namespace Net.Proxy
             switch (this._status)
             {
                 case ProxyDataStatus.NoTrack: return newValue;
-                case ProxyDataStatus.New: return newValue;
+                case ProxyDataStatus.New:
                 case ProxyDataStatus.Modified:
                 case ProxyDataStatus.UnModifed:
                     if (IsEqualObject(oldValue,newValue,strictCompare)) return newValue;
@@ -119,7 +119,8 @@ namespace Net.Proxy
                         this._newValues[field] = newValue;
                     }
                     this._version++;
-                    this._status = ProxyDataStatus.Modified;
+                    if(this._status!=ProxyDataStatus.New)
+                        this._status = ProxyDataStatus.Modified;
                     return newValue;
                 case ProxyDataStatus.Removed: return oldValue;
                 case ProxyDataStatus.Locked: return oldValue;
