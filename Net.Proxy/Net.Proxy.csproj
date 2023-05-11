@@ -11,11 +11,11 @@
     <PackageIconUrl>https://github.com/kelessal/net-proxy/blob/master/images/infinity.png</PackageIconUrl>
     <PackageTags>interface runtime proxy concrete</PackageTags>
     <LangVersion>latest</LangVersion>
-    <Version>5.6</Version>
+    <Version>6.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Net.Extensions" Version="5.0.0" />
+    <PackageReference Include="Net.Extensions" Version="6.0.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
   </ItemGroup>
 
